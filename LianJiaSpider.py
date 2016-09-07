@@ -360,10 +360,10 @@ def exception_spider(db_cj):
 
 if __name__=="__main__":
     command="create table if not exists xiaoqu (name TEXT primary key UNIQUE, regionb TEXT, regions TEXT, style TEXT, year TEXT)"
-    db_xq=SQLiteWraper('lianjia-xq.db',command)
+    db_xq=SQLiteWraper('/var/services/homes/lbleon/projects/lianjiaSpider/lianjia-xq.db',command)
     
     command="create table if not exists chengjiao (href TEXT primary key UNIQUE, name TEXT, style TEXT, area TEXT, orientation TEXT, floor TEXT, year TEXT, sign_time TEXT, unit_price TEXT, total_price TEXT,fangchan_class TEXT, school TEXT, subway TEXT)"
-    db_cj=SQLiteWraper('lianjia-cj.db',command)
+    db_cj=SQLiteWraper('/var/services/homes/lbleon/projects/lianjiaSpider/lianjia-cj.db',command)
     
     #爬下所有的小区信息
     for region in regions:

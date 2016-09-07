@@ -138,20 +138,17 @@ class Daemon:
 class SpiderDaemo(Daemon):
     def run(self):
         command="create table if not exists xiaoqu (name TEXT primary key UNIQUE, regionb TEXT, regions TEXT, style TEXT, year TEXT)"
-        db_xq=LianjiaSpider.SQLiteWraper('lianjia-xq.db',command)
+        db_xq=LianJiaSpider.SQLiteWraper('/var/services/homes/lbleon/projects/lianjiaSpider/lianjia-xq.db',command)
         
         command="create table if not exists chengjiao (href TEXT primary key UNIQUE, name TEXT, style TEXT, area TEXT, orientation TEXT, floor TEXT, year TEXT, sign_time TEXT, unit_price TEXT, total_price TEXT,fangchan_class TEXT, school TEXT, subway TEXT)"
-        db_cj=LianjiaSpider.SQLiteWraper('lianjia-cj.db',command)
+        db_cj=LianJiaSpider.SQLiteWraper('/var/services/homes/lbleon/projects/lianjiaSpider/lianjia-cj.db',command)
         
-        #爬下所有的小区信息
-        for region in regions:
-            LianjiaSpider.do_xiaoqu_spider(db_xq,region)
+        for region in LianJiaSpider.regions:
+            LianJiaSpider.do_xiaoqu_spider(db_xq,region)
         
-        #爬下所有小区里的成交信息
-        LianjiaSpider.do_xiaoqu_chengjiao_spider(db_xq,db_cj)
+        LianJiaSpider.do_xiaoqu_chengjiao_spider(db_xq,db_cj)
         
-        #重新爬取爬取异常的链接
-        LianjiaSpider.exception_spider(db_cj)
+        LianJiaSpider.exception_spider(db_cj)
 
 if __name__ == "__main__":
     daemon = SpiderDaemo("/var/services/homes/lbleon/projects/lianjiaSpider/spiderDaemon.pid")
