@@ -16,7 +16,7 @@ reload(sys)
 sys.setdefaultencoding("utf-8")
 
 #登录，不登录不能爬取三个月之内的数据
-import LianJiaLogIn
+#import LianJiaLogIn
 
 
 #Some User Agents
@@ -36,7 +36,7 @@ hds=[{'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) 
     
 
 #北京区域列表
-regions=[u"东城",u"西城",u"朝阳",u"海淀",u"丰台",u"石景山","通州",u"昌平",u"大兴",u"亦庄开发区",u"顺义",u"房山",u"门头沟",u"平谷",u"怀柔",u"密云",u"延庆",u"燕郊"]
+regions=[u"锦江",u"青羊",u"武侯",u"高新",u"成华",u"金牛","天府新区",u"双流",u"温江",u"郫县",u"龙泉驿",u"新都"]
 
 
 lock = threading.Lock()
@@ -136,7 +136,7 @@ def gen_chengjiao_insert_command(info_dict):
     return command
 
 
-def xiaoqu_spider(db_xq,url_page=u"http://bj.lianjia.com/xiaoqu/pg1rs%E6%98%8C%E5%B9%B3/"):
+def xiaoqu_spider(db_xq,url_page=u"http://cd.lianjia.com/xiaoqu/pg1rs%E6%98%8C%E5%B9%B3/"):
     """
     爬取页面链接中的小区信息
     """
@@ -172,7 +172,7 @@ def do_xiaoqu_spider(db_xq,region=u"昌平"):
     """
     爬取大区域中的所有小区信息
     """
-    url=u"http://bj.lianjia.com/xiaoqu/rs"+region+"/"
+    url=u"http://cd.lianjia.com/xiaoqu/rs"+region+"/"
     try:
         req = urllib2.Request(url,headers=hds[random.randint(0,len(hds)-1)])
         source_code = urllib2.urlopen(req,timeout=5).read()
@@ -190,7 +190,7 @@ def do_xiaoqu_spider(db_xq,region=u"昌平"):
     
     threads=[]
     for i in range(total_pages):
-        url_page=u"http://bj.lianjia.com/xiaoqu/pg%drs%s/" % (i+1,region)
+        url_page=u"http://cd.lianjia.com/xiaoqu/pg%drs%s/" % (i+1,region)
         t=threading.Thread(target=xiaoqu_spider,args=(db_xq,url_page))
         threads.append(t)
     for t in threads:
@@ -200,7 +200,7 @@ def do_xiaoqu_spider(db_xq,region=u"昌平"):
     print u"爬下了 %s 区全部的小区信息" % region
 
 
-def chengjiao_spider(db_cj,url_page=u"http://bj.lianjia.com/chengjiao/pg1rs%E5%86%A0%E5%BA%AD%E5%9B%AD"):
+def chengjiao_spider(db_cj,url_page=u"http://cd.lianjia.com/chengjiao/pg1rs%E5%86%A0%E5%BA%AD%E5%9B%AD"):
     """
     爬取页面链接中的成交记录
     """
@@ -261,7 +261,7 @@ def xiaoqu_chengjiao_spider(db_cj,xq_name=u"冠庭园"):
     """
     爬取小区成交记录
     """
-    url=u"http://bj.lianjia.com/chengjiao/rs"+urllib2.quote(xq_name)+"/"
+    url=u"http://cd.lianjia.com/chengjiao/rs"+urllib2.quote(xq_name)+"/"
     try:
         req = urllib2.Request(url,headers=hds[random.randint(0,len(hds)-1)])
         source_code = urllib2.urlopen(req,timeout=10).read()
@@ -284,7 +284,7 @@ def xiaoqu_chengjiao_spider(db_cj,xq_name=u"冠庭园"):
     
     threads=[]
     for i in range(total_pages):
-        url_page=u"http://bj.lianjia.com/chengjiao/pg%drs%s/" % (i+1,urllib2.quote(xq_name))
+        url_page=u"http://cd.lianjia.com/chengjiao/pg%drs%s/" % (i+1,urllib2.quote(xq_name))
         t=threading.Thread(target=chengjiao_spider,args=(db_cj,url_page))
         threads.append(t)
     for t in threads:
