@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-@author: 冰蓝
-@site: http://lanbing510.info
+@author: Lixiangyu
 """
 
 import re
