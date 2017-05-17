@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 @author: 冰蓝
-@site: http://lanbing510.info
+@site: https://lanbing510.info
 """
 
 import re
@@ -16,10 +16,11 @@ reload(sys)
 sys.setdefaultencoding("utf-8")
 
 #登录，不登录不能爬取三个月之内的数据
-import LianJiaLogIn
+#import LianJiaLogIn
 
 
 #Some User Agents
+"""
 hds=[{'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6'},\
     {'User-Agent':'Mozilla/5.0 (Windows NT 6.2) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.12 Safari/535.11'},\
     {'User-Agent':'Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; Trident/6.0)'},\
@@ -33,7 +34,14 @@ hds=[{'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) 
     {'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_0) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.56 Safari/535.11'},\
     {'User-Agent':'Opera/9.80 (Macintosh; Intel Mac OS X 10.6.8; U; en) Presto/2.8.131 Version/11.11'},\
     {'User-Agent':'Opera/9.80 (Windows NT 6.1; U; en) Presto/2.8.131 Version/11.11'}]
-    
+"""
+hds= {'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6',
+	    'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+	    'Accept-Encoding':'identity',
+	    'Accept-Language':'en-US,en;q=0.8',
+	    'Connection':'keep-alive',
+        'Cookie':'select_city=110000; select_nation=1; lianjia_uuid=00fc8dbf-e6cf-4f94-887c-6874dd53deb4; UM_distinctid=15bf1f90973507-09bdbeecc8a3f1-871133d-e1000-15bf1f9097463b; all-lj=78917a1433741fe7067e3641b5c01569; _jzqckmp=1; _jzqx=1.1494417610.1494417610.1.jzqsr=captcha%2Elianjia%2Ecom|jzqct=/.-; _ga=GA1.2.1563199523.1494413281; _gid=GA1.2.1979628260.1494417756; _smt_uid=5912f0e9.b3fb644; _qzja=1.176937353.1494413546114.1494413546114.1494417610092.1494417754116.1494418150594.0.0.0.6.2; _qzjb=1.1494417610092.4.0.0.0; _qzjc=1; _qzjto=6.2.0; _jzqa=1.1421860933554737700.1494413546.1494413546.1494417610.2; _jzqc=1; _jzqb=1.4.10.1494417610.1; CNZZDATA1253477573=628000428-1494413391-%7C1494418097; CNZZDATA1254525948=341047088-1494410628-%7C1494415011; CNZZDATA1255633284=1010315704-1494409642-%7C1494413722; CNZZDATA1255604082=64476216-1494410064-%7C1494416139; lianjia_ssid=9973b5dc-d5de-4b31-a55f-ebbac6356617',
+	   }
 
 #北京区域列表
 regions=[u"东城",u"西城",u"朝阳",u"海淀",u"丰台",u"石景山","通州",u"昌平",u"大兴",u"亦庄开发区",u"顺义",u"房山",u"门头沟",u"平谷",u"怀柔",u"密云",u"延庆",u"燕郊"]
@@ -136,26 +144,56 @@ def gen_chengjiao_insert_command(info_dict):
     return command
 
 
-def xiaoqu_spider(db_xq,url_page=u"http://bj.lianjia.com/xiaoqu/pg1rs%E6%98%8C%E5%B9%B3/"):
+def xiaoqu_spider(db_xq,url_page=u"https://bj.lianjia.com/xiaoqu/pg1rs%E6%98%8C%E5%B9%B3/"):
     """
     爬取页面链接中的小区信息
     """
+    info_list=[u'小区名称',u'大区域',u'小区域',u'小区户型',u'建造时间']
+    print "xiaoqu_spider start..."
+    print url_page
     try:
-        req = urllib2.Request(url_page,headers=hds[random.randint(0,len(hds)-1)])
+#        req = urllib2.Request(url_page,headers=hds[random.randint(0,len(hds)-1)])
+        req = urllib2.Request(url_page,headers=hds)
         source_code = urllib2.urlopen(req,timeout=10).read()
-        plain_text=unicode(source_code)#,errors='ignore')   
-        soup = BeautifulSoup(plain_text)
+#        print source_code
+        plain_text=unicode(source_code)#,errors='ignore')
+#        print plain_text  
+        soup = BeautifulSoup(plain_text,'html.parser')
     except (urllib2.HTTPError, urllib2.URLError), e:
-        print e
+        print e.code
         exit(-1)
     except Exception,e:
-        print e
+        print e.message
         exit(-1)
     
-    xiaoqu_list=soup.findAll('div',{'class':'info-panel'})
+    xiaoqu_list=soup.findAll('li',{'class':'clear xiaoquListItem'})
     for xq in xiaoqu_list:
         info_dict={}
+        xqinfo = xq.find('div',{'class':'info'})
+        xqinfotitle = xqinfo.find('div',{'class':'title'})
+        info_dict.update({info_list[0]:xqinfotitle.find('a').text})
+        xqinfopositionInfo = xqinfo.find('div',{'class':'positionInfo'})
+#        print xqinfopositionInfo
+        info_dict.update({info_list[1]:xqinfopositionInfo.find('a',{'class':'district'}).text})
+        info_dict.update({info_list[2]:xqinfopositionInfo.find('a',{'class':'bizcircle'}).text})
+        content = unicode(xqinfopositionInfo)
+        content = content.replace('\r', '').replace('\n', '')
+        content = content.replace(' ','')
+#        with open('test', 'w') as f:
+#            f.write(xqinfopositionInfo.prettify())
+#            f.close()
+#        content = unicode(xqinfopositionInfo.renderContents().strip())
+#        content = unicode(xqinfopositionInfo)
+#        print content
+        info = re.findall(r"</a>.*?</a>(.*?)</div>",content)
+#        print "info is "
+#        print info
+        info_dict.update({info_list[3]:info[0]})
+        info_dict.update({info_list[4]:info[0]})
+#        print info_dict	
+        """
         info_dict.update({u'小区名称':xq.find('a').text})
+        
         content=unicode(xq.find('div',{'class':'con'}).renderContents().strip())
         info=re.match(r".+>(.+)</a>.+>(.+)</a>.+</span>(.+)<span>.+</span>(.+)",content)
         if info:
@@ -164,20 +202,25 @@ def xiaoqu_spider(db_xq,url_page=u"http://bj.lianjia.com/xiaoqu/pg1rs%E6%98%8C%E
             info_dict.update({u'小区域':info[1]})
             info_dict.update({u'小区户型':info[2]})
             info_dict.update({u'建造时间':info[3][:4]})
+        """
         command=gen_xiaoqu_insert_command(info_dict)
+#        print command
         db_xq.execute(command,1)
-
+    print "xiaoqu_spider end..."
     
 def do_xiaoqu_spider(db_xq,region=u"昌平"):
     """
     爬取大区域中的所有小区信息
     """
-    url=u"http://bj.lianjia.com/xiaoqu/rs"+region+"/"
+    print "%s is ready to spider" % region
+    url=u"https://bj.lianjia.com/xiaoqu/rs"+region+"/"
     try:
-        req = urllib2.Request(url,headers=hds[random.randint(0,len(hds)-1)])
+#        req = urllib2.Request(url,headers=hds[random.randint(0,len(hds)-1)])
+        req = urllib2.Request(url,headers=hds)
         source_code = urllib2.urlopen(req,timeout=5).read()
-        plain_text=unicode(source_code)#,errors='ignore')   
-        soup = BeautifulSoup(plain_text)
+        plain_text=unicode(source_code)#,errors='ignore')
+#        print plain_text   
+        soup = BeautifulSoup(plain_text,'html.parser')
     except (urllib2.HTTPError, urllib2.URLError), e:
         print e
         return
@@ -187,28 +230,38 @@ def do_xiaoqu_spider(db_xq,region=u"昌平"):
     d="d="+soup.find('div',{'class':'page-box house-lst-page-box'}).get('page-data')
     exec(d)
     total_pages=d['totalPage']
-    
+#    print total_pages
     threads=[]
-    for i in range(total_pages):
-        url_page=u"http://bj.lianjia.com/xiaoqu/pg%drs%s/" % (i+1,region)
-        t=threading.Thread(target=xiaoqu_spider,args=(db_xq,url_page))
-        threads.append(t)
+#    """
+#    for i in range(total_pages):
+#        url_page=u"https://bj.lianjia.com/xiaoqu/pg%drs%s/" % (i+1,region)
+#        t=threading.Thread(target=xiaoqu_spider,args=(db_xq,url_page))
+#        threads.append(t)
+#   Test for the region Page 1 First
+    url_page=u"https://bj.lianjia.com/xiaoqu/pg%drs%s/" % (1,region)
+
+    t=threading.Thread(target=xiaoqu_spider,args=(db_xq,url_page))
+    threads.append(t)
     for t in threads:
         t.start()
     for t in threads:
         t.join()
-    print u"爬下了 %s 区全部的小区信息" % region
+#   """
+    print "%s is finished to spider" % region
 
 
-def chengjiao_spider(db_cj,url_page=u"http://bj.lianjia.com/chengjiao/pg1rs%E5%86%A0%E5%BA%AD%E5%9B%AD"):
+def chengjiao_spider(db_cj,url_page=u"https://bj.lianjia.com/chengjiao/pg1rs%E5%86%A0%E5%BA%AD%E5%9B%AD"):
     """
     爬取页面链接中的成交记录
     """
+    print "chengjiao_spider " + url_page
     try:
-        req = urllib2.Request(url_page,headers=hds[random.randint(0,len(hds)-1)])
+#        req = urllib2.Request(url_page,headers=hds[random.randint(0,len(hds)-1)])
+        req = urllib2.Request(url_page,headers=hds)
         source_code = urllib2.urlopen(req,timeout=10).read()
         plain_text=unicode(source_code)#,errors='ignore')   
-        soup = BeautifulSoup(plain_text)
+        soup = BeautifulSoup(plain_text,'html.parser')
+#        print plain_text
     except (urllib2.HTTPError, urllib2.URLError), e:
         print e
         exception_write('chengjiao_spider',url_page)
@@ -217,8 +270,8 @@ def chengjiao_spider(db_cj,url_page=u"http://bj.lianjia.com/chengjiao/pg1rs%E5%8
         print e
         exception_write('chengjiao_spider',url_page)
         return
-    
-    cj_list=soup.findAll('div',{'class':'info-panel'})
+    cj_list=soup.findAll('ul',{'class':'channelList'})    
+    cj_list=cj_list.findAll('li')
     for cj in cj_list:
         info_dict={}
         href=cj.find('a')
@@ -254,6 +307,7 @@ def chengjiao_spider(db_cj,url_page=u"http://bj.lianjia.com/chengjiao/pg1rs%E5%8
                     info_dict.update({u'地铁':c})
         
         command=gen_chengjiao_insert_command(info_dict)
+        print command
         db_cj.execute(command,1)
 
 
@@ -261,12 +315,14 @@ def xiaoqu_chengjiao_spider(db_cj,xq_name=u"冠庭园"):
     """
     爬取小区成交记录
     """
-    url=u"http://bj.lianjia.com/chengjiao/rs"+urllib2.quote(xq_name)+"/"
+    url = u"https://bj.lianjia.com/chengjiao/rs"+urllib2.quote(xq_name)+"/"
+    print "xiaoqu_chengjiao_spider" + url
     try:
-        req = urllib2.Request(url,headers=hds[random.randint(0,len(hds)-1)])
+#        req = urllib2.Request(url,headers=hds[random.randint(0,len(hds)-1)])
+        req = urllib2.Request(url,headers=hds)
         source_code = urllib2.urlopen(req,timeout=10).read()
         plain_text=unicode(source_code)#,errors='ignore')   
-        soup = BeautifulSoup(plain_text)
+        soup = BeautifulSoup(plain_text,'html.parser')
     except (urllib2.HTTPError, urllib2.URLError), e:
         print e
         exception_write('xiaoqu_chengjiao_spider',xq_name)
@@ -281,12 +337,19 @@ def xiaoqu_chengjiao_spider(db_cj,xq_name=u"冠庭园"):
         d="d="+content.get('page-data')
         exec(d)
         total_pages=d['totalPage']
-    
+    """    
     threads=[]
     for i in range(total_pages):
-        url_page=u"http://bj.lianjia.com/chengjiao/pg%drs%s/" % (i+1,urllib2.quote(xq_name))
+        url_page=u"https://bj.lianjia.com/chengjiao/pg%drs%s/" % (i+1,urllib2.quote(xq_name))
         t=threading.Thread(target=chengjiao_spider,args=(db_cj,url_page))
         threads.append(t)
+    """
+#Spider for the 1st Page of ChenJiao
+    threads=[]
+    url_page=u"https://bj.lianjia.com/chengjiao/pg%drs%s/" % (1,urllib2.quote(xq_name))
+    t=threading.Thread(target=chengjiao_spider,args=(db_cj,url_page))
+    threads.append(t)
+
     for t in threads:
         t.start()
     for t in threads:
@@ -299,10 +362,14 @@ def do_xiaoqu_chengjiao_spider(db_xq,db_cj):
     """
     count=0
     xq_list=db_xq.fetchall()
+#Test for one SingleXiaoqu First
+    xiaoqu_chengjiao_spider(db_cj,xq_list[0][0])
+    """
     for xq in xq_list:
         xiaoqu_chengjiao_spider(db_cj,xq[0])
         count+=1
         print 'have spidered %d xiaoqu' % count
+    """
     print 'done'
 
 
@@ -360,19 +427,24 @@ def exception_spider(db_cj):
 
 
 if __name__=="__main__":
+    print "start..."
     command="create table if not exists xiaoqu (name TEXT primary key UNIQUE, regionb TEXT, regions TEXT, style TEXT, year TEXT)"
     db_xq=SQLiteWraper('lianjia-xq.db',command)
     
     command="create table if not exists chengjiao (href TEXT primary key UNIQUE, name TEXT, style TEXT, area TEXT, orientation TEXT, floor TEXT, year TEXT, sign_time TEXT, unit_price TEXT, total_price TEXT,fangchan_class TEXT, school TEXT, subway TEXT)"
     db_cj=SQLiteWraper('lianjia-cj.db',command)
     
+    print "DB created"
+    do_xiaoqu_spider(db_xq,regions[2])
+    do_xiaoqu_chengjiao_spider(db_xq,db_cj)
+        
     #爬下所有的小区信息
-    for region in regions:
-        do_xiaoqu_spider(db_xq,region)
+#   for region in regions:
+#        do_xiaoqu_spider(db_xq,region)
     
     #爬下所有小区里的成交信息
-    do_xiaoqu_chengjiao_spider(db_xq,db_cj)
+#    do_xiaoqu_chengjiao_spider(db_xq,db_cj)
     
     #重新爬取爬取异常的链接
-    exception_spider(db_cj)
+#    exception_spider(db_cj)
 
