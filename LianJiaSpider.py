@@ -44,7 +44,8 @@ hds= {'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) 
 	   }
 
 #北京区域列表
-regions=[u"东城",u"西城",u"朝阳",u"海淀",u"丰台",u"石景山","通州",u"昌平",u"大兴",u"亦庄开发区",u"顺义",u"房山",u"门头沟",u"平谷",u"怀柔",u"密云",u"延庆",u"燕郊"]
+#regions=[u"东城",u"西城",u"朝阳",u"海淀",u"丰台",u"石景山","通州",u"昌平",u"大兴",u"亦庄开发区",u"顺义",u"房山",u"门头沟",u"平谷",u"怀柔",u"密云",u"延庆",u"燕郊"]
+regions=[u"朝阳",u"东城",u"西城",u"海淀",u"昌平"]
 
 
 lock = threading.Lock()
@@ -189,7 +190,17 @@ def xiaoqu_spider(db_xq,url_page=u"https://bj.lianjia.com/xiaoqu/pg1rs%E6%98%8C%
 #        print "info is "
 #        print info
         info_dict.update({info_list[3]:info[0]})
-        info_dict.update({info_list[4]:info[0]})
+        infoBuildDate = re.sub("[^0-9]", "", info[0])
+#        print infoBuildDate
+        if infoBuildDate.isdigit() == True:
+            infoBuildDateNum = int(infoBuildDate)
+#            print infoBuildDateNum
+        else:
+            continue
+#        skip the xj < 2000
+        if infoBuildDateNum < 2000:
+            continue
+        info_dict.update({info_list[4]:infoBuildDate})
 #        print info_dict	
         """
         info_dict.update({u'小区名称':xq.find('a').text})
@@ -302,7 +313,7 @@ def chengjiao_spider(db_cj,url_page=u"https://bj.lianjia.com/chengjiao/pg1rs%E5%
         info_dict.update({info_list[6]:cjpositionInfo[1]})
     
         cjdealDate = cj.find('div',{'class':'dealDate'})
-        info_dict.update({info_list[7]:cjhouseInfo.text})
+        info_dict.update({info_list[7]:cjdealDate.text})
 #        print cjdealDate.text
         cjunitPrice = cj.find('div',{'class':'unitPrice'})
 #        print cjunitPrice
@@ -342,7 +353,7 @@ def chengjiao_spider(db_cj,url_page=u"https://bj.lianjia.com/chengjiao/pg1rs%E5%
         db_cj.execute(command,1)
 
 
-def xiaoqu_chengjiao_spider(db_cj,xq_name=u"冠庭园"):
+def xiaoqu_chengjiao_spider(db_cj,xq_name=u"澳洲康都"):
     """
     爬取小区成交记录
     """
@@ -466,16 +477,17 @@ if __name__=="__main__":
     db_cj=SQLiteWraper('lianjia-cj.db',command)
     
     print "DB created"
-    do_xiaoqu_spider(db_xq,regions[2])
-    do_xiaoqu_chengjiao_spider(db_xq,db_cj)
-        
-    #爬下所有的小区信息
-#   for region in regions:
-#        do_xiaoqu_spider(db_xq,region)
+#    xiaoqu_chengjiao_spider(db_cj)
+#    do_xiaoqu_spider(db_xq,regions[2])
+#    do_xiaoqu_chengjiao_spider(db_xq,db_cj)
+
+#   爬下所有的小区信息
+    for region in regions:
+        do_xiaoqu_spider(db_xq,region)
     
     #爬下所有小区里的成交信息
-#    do_xiaoqu_chengjiao_spider(db_xq,db_cj)
+    do_xiaoqu_chengjiao_spider(db_xq,db_cj)
     
     #重新爬取爬取异常的链接
-#    exception_spider(db_cj)
+    exception_spider(db_cj)
 
