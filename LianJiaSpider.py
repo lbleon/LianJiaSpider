@@ -40,8 +40,9 @@ hds= {'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) 
 	    'Accept-Encoding':'identity',
 	    'Accept-Language':'en-US,en;q=0.8',
 	    'Connection':'keep-alive',
-        'Cookie':'select_city=110000; select_nation=1; lianjia_uuid=00fc8dbf-e6cf-4f94-887c-6874dd53deb4; UM_distinctid=15bf1f90973507-09bdbeecc8a3f1-871133d-e1000-15bf1f9097463b; all-lj=78917a1433741fe7067e3641b5c01569; _jzqckmp=1; _jzqx=1.1494417610.1494417610.1.jzqsr=captcha%2Elianjia%2Ecom|jzqct=/.-; _ga=GA1.2.1563199523.1494413281; _gid=GA1.2.1979628260.1494417756; _smt_uid=5912f0e9.b3fb644; _qzja=1.176937353.1494413546114.1494413546114.1494417610092.1494417754116.1494418150594.0.0.0.6.2; _qzjb=1.1494417610092.4.0.0.0; _qzjc=1; _qzjto=6.2.0; _jzqa=1.1421860933554737700.1494413546.1494413546.1494417610.2; _jzqc=1; _jzqb=1.4.10.1494417610.1; CNZZDATA1253477573=628000428-1494413391-%7C1494418097; CNZZDATA1254525948=341047088-1494410628-%7C1494415011; CNZZDATA1255633284=1010315704-1494409642-%7C1494413722; CNZZDATA1255604082=64476216-1494410064-%7C1494416139; lianjia_ssid=9973b5dc-d5de-4b31-a55f-ebbac6356617',
-	   }
+#        'Cookie':'select_city=110000; select_nation=1; lianjia_uuid=00fc8dbf-e6cf-4f94-887c-6874dd53deb4; UM_distinctid=15bf1f90973507-09bdbeecc8a3f1-871133d-e1000-15bf1f9097463b; all-lj=78917a1433741fe7067e3641b5c01569; _jzqckmp=1; _jzqx=1.1494417610.1494417610.1.jzqsr=captcha%2Elianjia%2Ecom|jzqct=/.-; _ga=GA1.2.1563199523.1494413281; _gid=GA1.2.1979628260.1494417756; _smt_uid=5912f0e9.b3fb644; _qzja=1.176937353.1494413546114.1494413546114.1494417610092.1494417754116.1494418150594.0.0.0.6.2; _qzjb=1.1494417610092.4.0.0.0; _qzjc=1; _qzjto=6.2.0; _jzqa=1.1421860933554737700.1494413546.1494413546.1494417610.2; _jzqc=1; _jzqb=1.4.10.1494417610.1; CNZZDATA1253477573=628000428-1494413391-%7C1494418097; CNZZDATA1254525948=341047088-1494410628-%7C1494415011; CNZZDATA1255633284=1010315704-1494409642-%7C1494413722; CNZZDATA1255604082=64476216-1494410064-%7C1494416139; lianjia_ssid=9973b5dc-d5de-4b31-a55f-ebbac6356617',
+'Cookie':'lianjia_uuid=5fde4b43-8c71-4bed-ad0d-ec339612fbeb; sample_traffic_test=controlled_66; select_city=110000; UM_distinctid=15c16e72e0a890-06b0fd49251c29-396a7807-fa000-15c16e72e0b806; _jzqckmp=1; lianjia_token=2.0031e03c78489820db204d15497f1ca53e; _smt_uid=591c6424.1d895acc; _jzqa=1.1332347072049126100.1495032870.1495032870.1495040251.2; _jzqc=1; _jzqx=1.1495032870.1495040251.1.jzqsr=captcha%2Elianjia%2Ecom|jzqct=/.-; _jzqb=1.1.10.1495040251.1; _gat=1; _gat_past=1; _gat_global=1; _gat_new_global=1; _ga=GA1.2.1048061317.1495032873; _gid=GA1.2.1297077282.1495040262; _gat_dianpu_agent=1; lianjia_ssid=f05dc78b-ea9f-243b-54a9-19eda074ee57'
+       }
 
 #北京区域列表
 #regions=[u"东城",u"西城",u"朝阳",u"海淀",u"丰台",u"石景山","通州",u"昌平",u"大兴",u"亦庄开发区",u"顺义",u"房山",u"门头沟",u"平谷",u"怀柔",u"密云",u"延庆",u"燕郊"]
@@ -230,7 +231,7 @@ def do_xiaoqu_spider(db_xq,region=u"昌平"):
         req = urllib2.Request(url,headers=hds)
         source_code = urllib2.urlopen(req,timeout=5).read()
         plain_text=unicode(source_code)#,errors='ignore')
-#        print plain_text   
+#        print plain_text
         soup = BeautifulSoup(plain_text,'html.parser')
     except (urllib2.HTTPError, urllib2.URLError), e:
         print e
@@ -249,7 +250,7 @@ def do_xiaoqu_spider(db_xq,region=u"昌平"):
         t=threading.Thread(target=xiaoqu_spider,args=(db_xq,url_page))
         threads.append(t)
 #   Test for the region Page 1 First
-    url_page=u"https://bj.lianjia.com/xiaoqu/pg%drs%s/" % (1,region)
+#    url_page=u"https://bj.lianjia.com/xiaoqu/pg%drs%s/" % (1,region)
 
 #    t=threading.Thread(target=xiaoqu_spider,args=(db_xq,url_page))
 #    threads.append(t)
@@ -266,7 +267,7 @@ def chengjiao_spider(db_cj,url_page=u"https://bj.lianjia.com/chengjiao/pg1rs%E5%
     爬取页面链接中的成交记录
     """
     info_list=[u'链接',u'小区名称',u'户型',u'面积',u'朝向',u'楼层',u'建造时间',u'签约时间',u'签约单价',u'签约总价',u'房产类型',u'学区',u'地铁']
-    print "chengjiao_spider " + url_page
+    print "chengjiao_spider page " + url_page
     try:
 #        req = urllib2.Request(url_page,headers=hds[random.randint(0,len(hds)-1)])
         req = urllib2.Request(url_page,headers=hds)
@@ -410,7 +411,7 @@ def do_xiaoqu_chengjiao_spider(db_xq,db_cj):
     for xq in xq_list:
         xiaoqu_chengjiao_spider(db_cj,xq[0])
         count+=1
-        print 'have spidered %d xiaoqu' % count
+        print 'have spidered %d %s xiaoqu' % (count,xq[0])
 #    """
     print 'done'
 
@@ -478,7 +479,7 @@ if __name__=="__main__":
     
     print "DB created"
 #    xiaoqu_chengjiao_spider(db_cj)
-#    do_xiaoqu_spider(db_xq,regions[2])
+#    do_xiaoqu_spider(db_xq,regions[0])
 #    do_xiaoqu_chengjiao_spider(db_xq,db_cj)
 
 #   爬下所有的小区信息
