@@ -92,7 +92,7 @@ class SQLiteWraper(object):
                 cu.execute(command[0],command[1])
             conn.commit()
         except sqlite3.IntegrityError,e:
-            #print e
+            print e
             return -1
         except Exception, e:
             print e
@@ -254,12 +254,16 @@ def chengjiao_spider(db_cj,url_page=u"https://bj.lianjia.com/chengjiao/pg1rs%E5%
     """
     爬取页面链接中的成交记录
     """
+    info_list=[u'链接',u'小区名称',u'户型',u'面积',u'朝向',u'楼层',u'建造时间',u'签约时间',u'签约单价',u'签约总价',u'房产类型',u'学区',u'地铁']
     print "chengjiao_spider " + url_page
     try:
 #        req = urllib2.Request(url_page,headers=hds[random.randint(0,len(hds)-1)])
         req = urllib2.Request(url_page,headers=hds)
         source_code = urllib2.urlopen(req,timeout=10).read()
-        plain_text=unicode(source_code)#,errors='ignore')   
+        plain_text=unicode(source_code)#,errors='ignore')
+#        with open('test', 'w') as f:
+#            f.write(plain_text)
+#            f.close()   
         soup = BeautifulSoup(plain_text,'html.parser')
 #        print plain_text
     except (urllib2.HTTPError, urllib2.URLError), e:
@@ -270,44 +274,71 @@ def chengjiao_spider(db_cj,url_page=u"https://bj.lianjia.com/chengjiao/pg1rs%E5%
         print e
         exception_write('chengjiao_spider',url_page)
         return
-    cj_list=soup.findAll('ul',{'class':'channelList'})    
+
+    cj_list=soup.find('ul',{'class':'listContent'})    
     cj_list=cj_list.findAll('li')
+#    print cj_list
     for cj in cj_list:
         info_dict={}
-        href=cj.find('a')
-        if not href:
+        cjtitle = cj.find('div',{'class':'title'})
+        href=cjtitle.find('a')
+        cjname = cjtitle.text.split(" ")
+
+        info_dict.update({info_list[0]:href.attrs['href']})
+        cjhouseInfo = cj.find('div',{'class':'houseInfo'})
+        info_dict.update({info_list[1]:cjname[0]})
+        info_dict.update({info_list[2]:cjname[1]})
+        info_dict.update({info_list[3]:cjname[2]})
+    
+#        print cjhouseInfo.text
+        cjhouseInfoDetails = cjhouseInfo.text.replace(" ","").split("|")
+#        print cjhouseInfoDetails
+        info_dict.update({info_list[4]:cjhouseInfoDetails[0]})
+    
+        cjpositionInfo = cj.find('div',{'class':'positionInfo'})
+#        print cjpositionInfo.text
+        cjpositionInfo = cjpositionInfo.text.split(" ")
+        info_dict.update({info_list[5]:cjpositionInfo[0]})
+        info_dict.update({info_list[6]:cjpositionInfo[1]})
+    
+        cjdealDate = cj.find('div',{'class':'dealDate'})
+        info_dict.update({info_list[7]:cjhouseInfo.text})
+#        print cjdealDate.text
+        cjunitPrice = cj.find('div',{'class':'unitPrice'})
+#        print cjunitPrice
+        cjunitPriceNum = re.sub("[^0-9]", "", cjunitPrice.text)
+#        print cjunitPriceNum
+        if cjunitPriceNum.isdigit() == True:
+            cjunitPriceNum = int(cjunitPriceNum)
+        else:
             continue
-        info_dict.update({u'链接':href.attrs['href']})
-        content=cj.find('h2').text.split()
-        if content:
-            info_dict.update({u'小区名称':content[0]})
-            info_dict.update({u'户型':content[1]})
-            info_dict.update({u'面积':content[2]})
-        content=unicode(cj.find('div',{'class':'con'}).renderContents().strip())
-        content=content.split('/')
-        if content:
-            info_dict.update({u'朝向':content[0].strip()})
-            info_dict.update({u'楼层':content[1].strip()})
-            if len(content)>=3:
-                content[2]=content[2].strip();
-                info_dict.update({u'建造时间':content[2][:4]}) 
-        content=cj.findAll('div',{'class':'div-cun'})
-        if content:
-            info_dict.update({u'签约时间':content[0].text})
-            info_dict.update({u'签约单价':content[1].text})
-            info_dict.update({u'签约总价':content[2].text})
-        content=cj.find('div',{'class':'introduce'}).text.strip().split()
-        if content:
-            for c in content:
-                if c.find(u'满')!=-1:
-                    info_dict.update({u'房产类型':c})
-                elif c.find(u'学')!=-1:
-                    info_dict.update({u'学区':c})
-                elif c.find(u'距')!=-1:
-                    info_dict.update({u'地铁':c})
-        
+#       print cjunitPrice.text
+        info_dict.update({info_list[8]:cjunitPrice.text})
+        cjtotalPrice = cj.find('div',{'class':'totalPrice'})
+        cjtotalPriceNum = re.sub("[^0-9]", "", cjtotalPrice.text)
+        cjtotalPriceNum = int(cjtotalPriceNum)
+#        print cjtotalPriceNum
+        info_dict.update({info_list[9]:cjtotalPrice.text})
+#        print cjtotalPrice.text
+    
+        cjdealCycleeInfo = cj.find('div',{'class':'dealCycleeInfo'})
+        cjdealCycleeInfo = cjdealCycleeInfo.find('span',{'class':'dealCycleTxt'})
+        cjdealCycleeInfo = cjdealCycleeInfo.findAll('span')
+#        print cjdealCycleeInfo
+        cjdealCycleeInfoOriginalPriceNum = re.sub("[^0-9]", "", cjdealCycleeInfo[0].text)
+        cjdealCycleeInfoOriginalPriceNum = int(cjdealCycleeInfoOriginalPriceNum)
+#        cjdealCycleeInfoOriginalDayNum = re.sub("[^0-9]", "", cjdealCycleeInfo[1].text)
+#        cjdealCycleeInfoOriginalDayNum = int(cjdealCycleeInfoOriginalDayNum)
+    #    print cjdealCycleeInfo
+#        print cjdealCycleeInfoOriginalPriceNum
+#        print cjdealCycleeInfoOriginalDayNum
+#        print cjdealCycleeInfo[0].text
+        info_dict.update({info_list[10]:cjdealCycleeInfo[0].text})
+        info_dict.update({info_list[11]:cjtotalPrice.text})
+        info_dict.update({info_list[12]:cjtotalPrice.text})
+#        print info_dict
         command=gen_chengjiao_insert_command(info_dict)
-        print command
+#        print command
         db_cj.execute(command,1)
 
 
