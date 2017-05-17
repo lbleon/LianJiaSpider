@@ -233,15 +233,15 @@ def do_xiaoqu_spider(db_xq,region=u"昌平"):
 #    print total_pages
     threads=[]
 #    """
-#    for i in range(total_pages):
-#        url_page=u"https://bj.lianjia.com/xiaoqu/pg%drs%s/" % (i+1,region)
-#        t=threading.Thread(target=xiaoqu_spider,args=(db_xq,url_page))
-#        threads.append(t)
+    for i in range(total_pages):
+        url_page=u"https://bj.lianjia.com/xiaoqu/pg%drs%s/" % (i+1,region)
+        t=threading.Thread(target=xiaoqu_spider,args=(db_xq,url_page))
+        threads.append(t)
 #   Test for the region Page 1 First
     url_page=u"https://bj.lianjia.com/xiaoqu/pg%drs%s/" % (1,region)
 
-    t=threading.Thread(target=xiaoqu_spider,args=(db_xq,url_page))
-    threads.append(t)
+#    t=threading.Thread(target=xiaoqu_spider,args=(db_xq,url_page))
+#    threads.append(t)
     for t in threads:
         t.start()
     for t in threads:
@@ -368,18 +368,18 @@ def xiaoqu_chengjiao_spider(db_cj,xq_name=u"冠庭园"):
         d="d="+content.get('page-data')
         exec(d)
         total_pages=d['totalPage']
-    """    
+        
     threads=[]
     for i in range(total_pages):
         url_page=u"https://bj.lianjia.com/chengjiao/pg%drs%s/" % (i+1,urllib2.quote(xq_name))
         t=threading.Thread(target=chengjiao_spider,args=(db_cj,url_page))
         threads.append(t)
-    """
+
 #Spider for the 1st Page of ChenJiao
-    threads=[]
-    url_page=u"https://bj.lianjia.com/chengjiao/pg%drs%s/" % (1,urllib2.quote(xq_name))
-    t=threading.Thread(target=chengjiao_spider,args=(db_cj,url_page))
-    threads.append(t)
+#    threads=[]
+#    url_page=u"https://bj.lianjia.com/chengjiao/pg%drs%s/" % (1,urllib2.quote(xq_name))
+#    t=threading.Thread(target=chengjiao_spider,args=(db_cj,url_page))
+#    threads.append(t)
 
     for t in threads:
         t.start()
@@ -394,13 +394,13 @@ def do_xiaoqu_chengjiao_spider(db_xq,db_cj):
     count=0
     xq_list=db_xq.fetchall()
 #Test for one SingleXiaoqu First
-    xiaoqu_chengjiao_spider(db_cj,xq_list[0][0])
-    """
+#    xiaoqu_chengjiao_spider(db_cj,xq_list[0][0])
+#    """
     for xq in xq_list:
         xiaoqu_chengjiao_spider(db_cj,xq[0])
         count+=1
         print 'have spidered %d xiaoqu' % count
-    """
+#    """
     print 'done'
 
 
