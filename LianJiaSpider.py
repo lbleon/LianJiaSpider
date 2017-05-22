@@ -438,10 +438,10 @@ def xiaoqu_chengjiao_spider(db_cj,xq_name=u"澳洲康都"):
 #        print "input page to spide" + url_page
         t=threading.Thread(target=chengjiao_spider,args=(db_cj,url_page))
         threads.append(t)
-        sleep(random.randint(0,1))
-        t.start()
+#        sleep(random.randint(0,1))
+#        t.start()
 
-        t.join()
+#        t.join()
 
 #Spider for the 1st Page of ChenJiao
 #    threads=[]
@@ -449,12 +449,12 @@ def xiaoqu_chengjiao_spider(db_cj,xq_name=u"澳洲康都"):
 #    t=threading.Thread(target=chengjiao_spider,args=(db_cj,url_page))
 #    threads.append(t)
 # check the spider one by one
-"""
+
     for t in threads:
         t.start()
     for t in threads:
         t.join()
-"""
+
 def get_last_failed_xq():
     excep_list = exception_read()
     for excep in excep_list:
@@ -489,8 +489,11 @@ def do_xiaoqu_chengjiao_spider(db_xq,db_cj):
         #if para thread, almost 30 xq will make the traffic strang and blocked
         #the cookie is the most important one for getting the data, could think of login again and again
         if xq[0] != last_failed_xq_name and notfoundlastfailedxq:
+            pre_xq_name = xq[0]
             continue
         else:
+            if notfoundlastfailedxq :
+                xiaoqu_chengjiao_spider(db_cj, pre_xq_name)
             notfoundlastfailedxq = False
             xiaoqu_chengjiao_spider(db_cj,xq[0])
             print 'have spidered %d %s xiaoqu' % (count,xq[0])
