@@ -282,6 +282,8 @@ def chengjiao_spider(db_cj,url_page=u"https://bj.lianjia.com/chengjiao/pg1rs%E5%
 #        req = urllib2.Request(url_page,headers=hds[random.randint(0,len(hds)-1)])
 #        req = urllib2.Request(url_page,headers=hdsUserAgent[random.randint(0,len(hds)-1)])
 #
+#simulate the broswer with rodam User Agent
+        hds['User-Agent'] = hdsUserAgent[random.randint(0,len(hdsUserAgent)-1)]['User-Agent']
         req = urllib2.Request(url_page,headers=hds)
         source_code = urllib2.urlopen(req,timeout=10).read()
         plain_text=unicode(source_code)#,errors='ignore')
@@ -367,7 +369,9 @@ def chengjiao_spider(db_cj,url_page=u"https://bj.lianjia.com/chengjiao/pg1rs%E5%
             db_cj.execute(command,1)
     else:
         print "could not find listContent"
-        print plain_text
+        exception_write('chengjiao_spider', url_page)
+#        exception_write('xiaoqu_chengjiao_spider', xq_name)
+#        print plain_text
 
 
 
@@ -382,6 +386,8 @@ def xiaoqu_chengjiao_spider(db_cj,xq_name=u"澳洲康都"):
 #        req = urllib2.Request(url,headers=hdsUserAgent[random.randint(0,len(hds)-1)])
 #        hds['User Agent'] = hdsUserAgent[random.randint(0,len(hdsUserAgent) - 1)]
 #        print hds
+#simulate the broswer with rodam User Agent
+        hds['User-Agent'] = hdsUserAgent[random.randint(0,len(hdsUserAgent)-1)]['User-Agent']
         req = urllib2.Request(url,headers=hds)
         source_code = urllib2.urlopen(req,timeout=10).read()
         plain_text=unicode(source_code)#,errors='ignore')   
@@ -394,6 +400,20 @@ def xiaoqu_chengjiao_spider(db_cj,xq_name=u"澳洲康都"):
         print e
         exception_write('xiaoqu_chengjiao_spider',xq_name)
         return
+
+    #find how many the cj is
+    totalnumofcjhouse=soup.find('div',{'class':'total fl'})
+    if totalnumofcjhouse:
+        totalnumofcjhouse=totalnumofcjhouse.find('span')
+        totalnumofcjhouse=int(totalnumofcjhouse.text)
+#       print totalnumofcjhouse
+        if totalnumofcjhouse == 0:
+            return
+    else:
+        print "page does not contains the total fl"
+        exception_write('xiaoqu_chengjiao_spider', xq_name)
+        return
+
     content=soup.find('div',{'class':'page-box house-lst-page-box'})
     total_pages=0
     if content:
@@ -418,9 +438,10 @@ def xiaoqu_chengjiao_spider(db_cj,xq_name=u"澳洲康都"):
 #        print "input page to spide" + url_page
         t=threading.Thread(target=chengjiao_spider,args=(db_cj,url_page))
         threads.append(t)
-#        t.start()
-#        sleep(5)
-#        t.join()
+        sleep(random.randint(0,1))
+        t.start()
+
+        t.join()
 
 #Spider for the 1st Page of ChenJiao
 #    threads=[]
@@ -428,13 +449,24 @@ def xiaoqu_chengjiao_spider(db_cj,xq_name=u"澳洲康都"):
 #    t=threading.Thread(target=chengjiao_spider,args=(db_cj,url_page))
 #    threads.append(t)
 # check the spider one by one
-
+"""
     for t in threads:
         t.start()
     for t in threads:
         t.join()
+"""
+def get_last_failed_xq():
+    excep_list = exception_read()
+    for excep in excep_list:
+        excep = excep.strip()
+        if excep == "":
+            continue
+        excep_name, url = excep.split(" ", 1)
+        if excep_name == "xiaoqu_chengjiao_spider" :
+            return url
+        else:
+            continue
 
-    
 def do_xiaoqu_chengjiao_spider(db_xq,db_cj):
     """
     批量爬取小区成交记录
@@ -444,18 +476,25 @@ def do_xiaoqu_chengjiao_spider(db_xq,db_cj):
 #Test for one SingleXiaoqu First
 #    xiaoqu_chengjiao_spider(db_cj,xq_list[0][0])
 #    """
+#   read from the log of the lastname
+    last_failed_xq_name = get_last_failed_xq()
+    notfoundlastfailedxq = True
+
     for xq in xq_list:
         count += 1
+        print xq[0],last_failed_xq_name
+        print notfoundlastfailedxq
         #skip the success ones
         #1346 ~ 1370 is easy to have traffice issue of ip
         #if para thread, almost 30 xq will make the traffic strang and blocked
         #the cookie is the most important one for getting the data, could think of login again and again
-#        if count < 1494 :
-#            continue
-#        else:
-        xiaoqu_chengjiao_spider(db_cj,xq[0])
-        print 'have spidered %d %s xiaoqu' % (count,xq[0])
-#            sleep(5)
+        if xq[0] != last_failed_xq_name and notfoundlastfailedxq:
+            continue
+        else:
+            notfoundlastfailedxq = False
+            xiaoqu_chengjiao_spider(db_cj,xq[0])
+            print 'have spidered %d %s xiaoqu' % (count,xq[0])
+#        sleep(random.randint(0, 5))
 #            exception_write('last_chenjiao_spider', count)
 #    """
     print 'done'
@@ -471,6 +510,9 @@ def exception_write(fun_name,url):
     f.write(line)
     f.close()
     lock.release()
+
+    #exit the spider when the first exception meet
+    exit(0)
 
 
 def exception_read():
@@ -535,5 +577,5 @@ if __name__=="__main__":
     do_xiaoqu_chengjiao_spider(db_xq,db_cj)
     
     #重新爬取爬取异常的链接
-    exception_spider(db_cj)
+#    exception_spider(db_cj)
 
