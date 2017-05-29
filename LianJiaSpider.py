@@ -4,6 +4,7 @@
 """
 
 import re
+import os
 import urllib2  
 import sqlite3
 import random
@@ -35,7 +36,7 @@ hds=[{'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) 
     
 
 #北京区域列表
-regions=[u"锦江",u"青羊",u"武侯",u"高新",u"成华",u"金牛","天府新区",u"双流",u"温江",u"郫县",u"龙泉驿",u"新都"]
+regions=[u"锦江",u"青羊",u"武侯",u"高新",u"成华",u"金牛",u"天府新区",u"双流",u"温江",u"郫县",u"龙泉驿",u"新都"]
 
 
 lock = threading.Lock()
@@ -359,12 +360,13 @@ def exception_spider(db_cj):
 
 
 if __name__=="__main__":
+    path = "./"
     command="create table if not exists xiaoqu (name TEXT primary key UNIQUE, regionb TEXT, regions TEXT, style TEXT, year TEXT)"
-    db_xq=SQLiteWraper('/var/services/homes/lbleon/projects/lianjiaSpider/lianjia-xq.db',command)
+    db_xq=SQLiteWraper(os.path.join(path, 'lianjia-xq.db'),command)
     
     command="create table if not exists chengjiao (href TEXT primary key UNIQUE, name TEXT, style TEXT, area TEXT, orientation TEXT, floor TEXT, year TEXT, sign_time TEXT, unit_price TEXT, total_price TEXT,fangchan_class TEXT, school TEXT, subway TEXT)"
-    db_cj=SQLiteWraper('/var/services/homes/lbleon/projects/lianjiaSpider/lianjia-cj.db',command)
-    
+    db_cj=SQLiteWraper(os.path.join(path, 'lianjia-cj.db'), command)
+
     #爬下所有的小区信息
     for region in regions:
         do_xiaoqu_spider(db_xq,region)
